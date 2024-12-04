@@ -97,8 +97,30 @@ fun List<Int>.leastCommonMultiply(): Long = this.map(Int::toLong).reduce { acc, 
 }
 
 fun <T> MutableList<T>.addNotNull(item: T?): Boolean {
-    if(item == null) return false
+    if (item == null) return false
     return add(item)
 }
 
+fun List<String>.getDiagonals(): List<String> {
+    val fDiagonals = mutableMapOf<Int, StringBuilder>()
+    val bDiagonals = mutableMapOf<Int, StringBuilder>()
+    for (x in this.first().indices) {
+        for (y in this.indices) {
+            val current = this[y][x]
+            fDiagonals.getOrPut(x + y, ::StringBuilder).append(current)
+            bDiagonals.getOrPut(x - y, ::StringBuilder).append(current)
+        }
+    }
+    return fDiagonals.values.map(StringBuilder::toString) + bDiagonals.values.map(StringBuilder::toString)
+}
 
+fun List<String>.getColumns(): List<String> = buildList {
+    for (x in this@getColumns.first().indices) {
+        val column = buildString {
+            for (y in this@getColumns.indices) {
+                append(this@getColumns[y][x])
+            }
+        }
+        add(column)
+    }
+}
