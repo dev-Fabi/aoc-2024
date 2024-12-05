@@ -51,6 +51,45 @@ fun main() {
         return resorted.sumOf { it.strictMiddle() }
     }
 
+    /* Alternative
+        fun List<Pair<Int, Int>>.getComparator(): Comparator<Int> {
+            val byFirst = this.groupBy(Pair<Int, Int>::first, Pair<Int, Int>::second).mapValues { it.value.toSet() }
+            val bySecond = this.groupBy(Pair<Int, Int>::second, Pair<Int, Int>::first).mapValues { it.value.toSet() }
+
+            return Comparator { o1, o2 ->
+                when {
+                    o2 in (byFirst[o1] ?: emptySet()) -> -1
+                    o1 in (bySecond[o2] ?: emptySet()) -> 1
+                    else -> 0
+                }
+            }
+        }
+
+        fun part1(input: String): Int {
+            val (orderRules, updates) = input.getRulesAndUpdates()
+            val comparator = orderRules.getComparator()
+
+            return updates.filter { update ->
+                update.zipWithNext().all { comparator.compare(it.first, it.second) == -1 }
+            }.sumOf {
+                it.strictMiddle()
+            }
+        }
+
+        fun part2(input: String): Int {
+            val (orderRules, updates) = input.getRulesAndUpdates()
+            val comparator = orderRules.getComparator()
+
+            return updates.filter { update ->
+                update.zipWithNext().any { comparator.compare(it.first, it.second) != -1 }
+            }.map {
+                it.sortedWith(comparator)
+            }.sumOf {
+                it.strictMiddle()
+            }
+        }
+    */
+
     // Test if implementation meets criteria from the description
     val testInput = utils.readFile("test")
     check(part1(testInput) == 143)
