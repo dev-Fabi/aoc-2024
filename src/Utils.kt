@@ -124,3 +124,9 @@ fun List<String>.getColumns(): List<String> = buildList {
         add(column)
     }
 }
+
+fun <T> List<T>.strictMiddle(): T {
+    val count = count()
+    if (count % 2 == 0) error("Collection has no middle element")
+    return this[count / 2]
+}
