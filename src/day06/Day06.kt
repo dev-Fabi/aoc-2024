@@ -27,7 +27,7 @@ fun main() {
         }
     }
 
-    fun part1(input: List<String>): Int {
+    fun simulateGuard(input: List<String>, beforeMove: ((guard: FacingPoint) -> Boolean)? = null): Set<Point> {
         val obstacles = mutableSetOf<Point>()
         var tmpGuard: FacingPoint? = null
         for (x in input.indices) {
@@ -46,6 +46,9 @@ fun main() {
 
         while (guard.position.x in input.indices && guard.position.y in input[0].indices) {
             visitedPositions.add(guard.position)
+
+            if (beforeMove?.invoke(guard) == false) break
+
             var newGuard = guard.move()
             if (newGuard.position in obstacles) {
                 newGuard = guard.turn(90)
@@ -55,17 +58,47 @@ fun main() {
 
         //printMap(input, guard, obstacles, visitedPositions)
 
+        return visitedPositions
+    }
+
+    fun getGuardPosition(input: List<String>): Point {
+        val guardChars = setOf('^', 'v', '<', '>')
+        return input.indexOfFirst { line -> line.any { it in guardChars } }.let { line ->
+            line to input[line].indexOfFirst { it in guardChars }
+        }
+    }
+
+    fun part1(input: List<String>): Int {
+        val visitedPositions = simulateGuard(input)
         return visitedPositions.size
     }
 
     fun part2(input: List<String>): Int {
-        return input.size
+        val guardStartingPosition = getGuardPosition(input)
+        val visitedPositions = simulateGuard(input).minus(guardStartingPosition)
+
+        // Check all possible obstacle placements on the path of the guard if they create a loop.
+        // Loop can be detected when a guard enters a point facing in the same direction twice.
+        // Not really efficient but it gets the job done...
+        return visitedPositions.count { newObstaclePosition ->
+            val guardHistory = mutableSetOf<FacingPoint>()
+            val modifiedMap = input.map { it.toMutableList() }.apply {
+                this[newObstaclePosition.x][newObstaclePosition.y] = '#'
+            }.map { it.joinToString("") }
+            var loop = false
+            simulateGuard(modifiedMap) { guard ->
+                loop = !guardHistory.add(guard)
+                return@simulateGuard !loop
+            }
+
+            return@count loop
+        }
     }
 
     // Test if implementation meets criteria from the description
     val testInput = utils.readLines("test")
     check(part1(testInput) == 41)
-    //check(part2(testInput) == 6)
+    check(part2(testInput) == 6)
 
     // Solve puzzle and print result
     val input = utils.readLines()
